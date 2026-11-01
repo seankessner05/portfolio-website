@@ -100,7 +100,8 @@
         'Run in-person mobile notarizations through Proof.com, with scheduling in Calendly and a custom job tracker and operating wiki for case tracking.',
         'Designed and deployed the client-facing website using AI-assisted development tools, GitHub and Netlify.',
         'Built a custom AI chat assistant to handle routine client inquiries.'],
-      stack: 'Netlify, GitHub, Proof.com, Calendly, AI-assisted development'
+      stack: 'Netlify, GitHub, Proof.com, Calendly, AI-assisted development',
+      url: 'https://debandkessnotary.com'
     },
     model: {
       tag: 'Finance · Valuation', title: '3-Statement Model & DCF',
@@ -127,12 +128,13 @@
     body.innerHTML = `<span class="tag">${esc(d.tag)}</span><h3 id="caseTitle">${esc(d.title)}</h3>
       <h4>The goal</h4><p>${esc(d.challenge)}</p>
       <h4>What I did</h4><ul>${d.did.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-      <h4>Tools</h4><p>${esc(d.stack)}</p>`;
+      <h4>Tools</h4><p>${esc(d.stack)}</p>
+      ${d.url ? `<p><a class="btn primary" href="${esc(d.url)}" target="_blank" rel="noopener">Visit live site ↗</a></p>` : ''}`;
     dialog.showModal();
   };
   $$('.project').forEach(card => {
     const open = () => openCase(card.dataset.case);
-    card.addEventListener('click', open);
+    card.addEventListener('click', e => { if (!e.target.closest('a')) open(); });
     card.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === card) open(); });
   });
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
