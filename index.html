@@ -10,8 +10,8 @@
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/sean.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#0b1020">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1020'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='32' font-weight='700' text-anchor='middle' fill='%2334d399'%3ESK%3C/text%3E%3C/svg%3E">
+  <meta name="theme-color" content="#120a22">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23120a22'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='32' font-weight='700' text-anchor='middle' fill='%23ff8a3d'%3ESK%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -44,6 +44,7 @@
         <li><a href="#contact" class="nav-cta">Contact</a></li>
       </ul>
     </nav>
+    <button class="kbd-btn" id="paletteBtn" type="button" aria-label="Open quick navigation" title="Quick navigation"><span>Quick nav</span><kbd id="kbdHint">⌘K</kbd></button>
     <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch to light mode" title="Toggle theme">
       <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -141,8 +142,14 @@
     <!-- EXPERIENCE -->
     <section class="wrap section" id="experience">
       <h2 class="reveal"><small>02</small> Experience &amp; education</h2>
+      <div class="filters reveal" role="group" aria-label="Filter experience">
+        <button type="button" class="filter active" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" class="filter" data-filter="finance" aria-pressed="false">Finance</button>
+        <button type="button" class="filter" data-filter="founder" aria-pressed="false">Founder</button>
+        <button type="button" class="filter" data-filter="education" aria-pressed="false">Education</button>
+      </div>
       <ol class="timeline">
-        <li class="reveal">
+        <li class="reveal" data-cat="founder">
           <time>May 2026 – Present</time>
           <h3>Co-Founder &amp; Licensed Notary Public <span>· Deb &amp; Kess Notary</span></h3>
           <ul>
@@ -151,7 +158,7 @@
             <li>Designed and deployed the client-facing website with AI-assisted development, GitHub and Netlify, including a custom AI chat assistant for routine client questions.</li>
           </ul>
         </li>
-        <li class="reveal">
+        <li class="reveal" data-cat="finance">
           <time>Aug 2025 – Present</time>
           <h3>HWS Finance Society <span>· Member</span></h3>
           <ul>
@@ -159,7 +166,7 @@
             <li>4-day immersive NYC Career Trek: met professionals in investment banking, wealth management, capital markets and fintech at 10+ leading global institutions.</li>
           </ul>
         </li>
-        <li class="reveal">
+        <li class="reveal" data-cat="finance">
           <time>Jan 2026 – Present</time>
           <h3>HWS Investment Club &amp; AI Club <span>· Member</span></h3>
           <ul>
@@ -167,17 +174,17 @@
             <li>Use AI tools and prompt engineering to streamline research, analysis and productivity workflows.</li>
           </ul>
         </li>
-        <li class="reveal">
+        <li class="reveal" data-cat="finance">
           <time>Aug – Dec 2025</time>
           <h3>Wall Street Prep Financial Modeling Bootcamp <span>· Participant</span></h3>
           <ul><li>Built a 3-statement financial model and DCF / comparable company valuation from scratch in Excel, as used in investment banking and equity research.</li></ul>
         </li>
-        <li class="reveal">
+        <li class="reveal" data-cat="education">
           <time>Expected Spring 2027</time>
           <h3>Charles University &amp; CERGE-EI <span>· Prague, Czech Republic</span></h3>
           <ul><li>Selected for the Certificate in International Economics and Finance at the top-ranked economics research institution in Central and Eastern Europe, including an economic analysis paper.</li></ul>
         </li>
-        <li class="reveal">
+        <li class="reveal" data-cat="education">
           <time>Expected May 2028</time>
           <h3>Hobart and William Smith Colleges <span>· B.S. Economics, GPA 3.5</span></h3>
           <ul>
@@ -233,6 +240,32 @@
           <ul class="stack"><li>Economics</li><li>Stata / R</li><li>Research</li></ul>
           <button class="link" type="button" data-open="ief">Read overview →</button>
         </article>
+      </div>
+      <div class="dcf card reveal" id="dcf">
+        <div class="dcf-head">
+          <span class="tag">Interactive demo</span>
+          <h3>Try a DCF</h3>
+          <p class="muted">A five-year discounted cash flow for a hypothetical company that generates $100M of free cash flow today. Drag the sliders to see how growth and the discount rate move value. This is a teaching example, not a real company or investment advice.</p>
+        </div>
+        <div class="dcf-body">
+          <div class="dcf-controls">
+            <label>Annual FCF growth <output id="o-growth">8.0%</output><input id="in-growth" type="range" min="0" max="20" step="0.5" value="8"></label>
+            <label>Discount rate (WACC) <output id="o-wacc">10.0%</output><input id="in-wacc" type="range" min="6" max="14" step="0.5" value="10"></label>
+            <label>Terminal growth <output id="o-tg">2.0%</output><input id="in-tg" type="range" min="0" max="4" step="0.25" value="2"></label>
+          </div>
+          <div class="dcf-out" aria-live="polite">
+            <div class="ev-label">Implied enterprise value</div>
+            <div class="ev" id="ev">$0M</div>
+            <div class="split" aria-hidden="true"><span id="splitFcf"></span><span id="splitTv"></span></div>
+            <div class="split-legend"><span><i class="k1"></i>PV of 5-yr cash flows <b id="pvFcf"></b></span><span><i class="k2"></i>PV of terminal value <b id="pvTv"></b></span></div>
+            <div class="bars" id="bars" aria-hidden="true"></div>
+            <p class="dcf-warn" id="dcfWarn" hidden>Discount rate must be above terminal growth for the model to work.</p>
+          </div>
+        </div>
+        <div class="sens-wrap">
+          <div class="ev-label">Sensitivity: enterprise value ($M) by WACC and terminal growth</div>
+          <table class="sens" id="sens"></table>
+        </div>
       </div>
     </section>
 
@@ -306,6 +339,12 @@
   <dialog id="caseDialog" aria-labelledby="caseTitle">
     <form method="dialog"><button class="icon-btn close" aria-label="Close case study">✕</button></form>
     <div id="caseBody"></div>
+  </dialog>
+
+  <dialog id="palette" aria-label="Quick navigation">
+    <input id="paletteInput" type="text" placeholder="Jump to a section or run an action…" autocomplete="off" aria-controls="paletteList">
+    <ul id="paletteList" role="listbox"></ul>
+    <p class="palette-hint"><kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>Enter</kbd> select · <kbd>Esc</kbd> close</p>
   </dialog>
 
   <script src="js/utils.js"></script>

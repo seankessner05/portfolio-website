@@ -175,6 +175,79 @@
     });
   }
 
+  /* Experience filters */
+  const filterBtns = $$('.filter');
+  filterBtns.forEach(btn => btn.addEventListener('click', () => {
+    filterBtns.forEach(b => { const on = b === btn; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
+    $$('.timeline > li').forEach(li => li.classList.toggle('is-hidden', !U.matchesFilter(li.dataset.cat, btn.dataset.filter)));
+  }));
+
+  /* Interactive DCF */
+  const ids = ['growth', 'wacc', 'tg'];
+  const inp = Object.fromEntries(ids.map(k => [k, $('#in-' + k)]));
+  const money = n => '$' + Math.round(n).toLocaleString('en-US') + 'M';
+  const renderDcf = () => {
+    const v = k => parseFloat(inp[k].value);
+    ids.forEach(k => { $('#o-' + k).textContent = v(k).toFixed(k === 'tg' ? 2 : 1) + '%'; });
+    const r = U.dcfValue({ fcf0: 100, growth: v('growth') / 100, wacc: v('wacc') / 100, terminalGrowth: v('tg') / 100 });
+    $('#dcfWarn').hidden = !!r;
+    if (!r) { $('#ev').textContent = '—'; return; }
+    $('#ev').textContent = money(r.enterpriseValue);
+    $('#splitFcf').style.width = (1 - r.terminalShare) * 100 + '%';
+    $('#splitTv').style.width = r.terminalShare * 100 + '%';
+    $('#pvFcf').textContent = money(r.pvFcf);
+    $('#pvTv').textContent = money(r.pvTerminal) + ' (' + Math.round(r.terminalShare * 100) + '%)';
+    const max = Math.max(...r.flows);
+    $('#bars').innerHTML = r.flows.map((f, i) => `<div style="height:${Math.max(4, (f / max) * 100)}%" data-l="Y${i + 1} ${Math.round(f)}"></div>`).join('');
+    // sensitivity grid: WACC +/-1% by terminal growth +/-0.5%
+    const waccs = [v('wacc') - 1, v('wacc'), v('wacc') + 1], tgs = [v('tg') - 0.5, v('tg'), v('tg') + 0.5];
+    const vals = waccs.map(w => tgs.map(g => U.dcfValue({ fcf0: 100, growth: v('growth') / 100, wacc: w / 100, terminalGrowth: g / 100 })));
+    const flat = vals.flat().filter(Boolean).map(x => x.enterpriseValue), lo = Math.min(...flat), hi = Math.max(...flat);
+    const tint = x => { const t = hi === lo ? 0.5 : (x - lo) / (hi - lo); return `color-mix(in srgb, var(--accent) ${Math.round(t * 38)}%, color-mix(in srgb, var(--accent2) 14%, transparent))`; };
+    $('#sens').innerHTML = '<tr><th>WACC \\ TG</th>' + tgs.map(g => `<th>${g.toFixed(2)}%</th>`).join('') + '</tr>' +
+      waccs.map((w, i) => `<tr><th>${w.toFixed(1)}%</th>` + tgs.map((g, j) => {
+        const c = vals[i][j];
+        return c ? `<td class="${i === 1 && j === 1 ? 'base' : ''}" style="background:${tint(c.enterpriseValue)}">${Math.round(c.enterpriseValue).toLocaleString('en-US')}</td>` : '<td>n/a</td>';
+      }).join('') + '</tr>').join('');
+  };
+  ids.forEach(k => inp[k].addEventListener('input', renderDcf));
+  renderDcf();
+
+  /* Quick navigation palette (Cmd/Ctrl+K) */
+  const palette = $('#palette'), pInput = $('#paletteInput'), pList = $('#paletteList');
+  const go = id => () => { const el = $('#' + id); if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); };
+  const commands = [
+    { label: 'Go to About', keywords: 'bio intro', hint: 'Section', run: go('about') },
+    { label: 'Go to Experience', keywords: 'timeline jobs education', hint: 'Section', run: go('experience') },
+    { label: 'Go to Projects', keywords: 'work notary case studies', hint: 'Section', run: go('projects') },
+    { label: 'Try the DCF demo', keywords: 'valuation finance model slider', hint: 'Interactive', run: go('dcf') },
+    { label: 'Go to Skills', keywords: 'excel python', hint: 'Section', run: go('skills') },
+    { label: 'Go to Contact', keywords: 'email message hire', hint: 'Section', run: go('contact') },
+    { label: 'Visit Deb & Kess Notary site', keywords: 'live website', hint: 'External', run: () => window.open('https://debandkessnotary.com', '_blank', 'noopener') },
+    { label: 'Open LinkedIn', keywords: 'connect profile', hint: 'External', run: () => window.open('https://www.linkedin.com/in/sean-kessner-8090b9318', '_blank', 'noopener') },
+    { label: 'Download résumé (PDF)', keywords: 'cv', hint: 'Download', run: () => { const a = document.createElement('a'); a.href = 'assets/Sean-Kessner-Resume.pdf'; a.download = ''; a.click(); } },
+    { label: 'Email Sean', keywords: 'mail contact', hint: 'Action', run: () => { location.href = 'mailto:' + U.OWNER_EMAIL; } },
+    { label: 'Toggle light / dark theme', keywords: 'dark mode light', hint: 'Action', run: () => toggle.click() }
+  ];
+  let shown = commands, sel = 0;
+  const drawPalette = () => {
+    shown = U.filterCommands(commands, pInput.value); sel = Math.min(sel, Math.max(0, shown.length - 1));
+    pList.innerHTML = shown.length ? shown.map((c, i) => `<li role="option" data-i="${i}" class="${i === sel ? 'sel' : ''}" aria-selected="${i === sel}">${esc(c.label)}<small>${esc(c.hint)}</small></li>`).join('') : '<li>No matches</li>';
+  };
+  const runSel = i => { const c = shown[i]; if (!c) return; palette.close(); c.run(); };
+  const openPalette = () => { pInput.value = ''; sel = 0; drawPalette(); palette.showModal(); pInput.focus(); };
+  $('#paletteBtn').addEventListener('click', openPalette);
+  if (!/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) $('#kbdHint').textContent = 'Ctrl K';
+  addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); palette.open ? palette.close() : openPalette(); } });
+  pInput.addEventListener('input', () => { sel = 0; drawPalette(); });
+  pInput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(sel + 1, shown.length - 1); drawPalette(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(sel - 1, 0); drawPalette(); }
+    else if (e.key === 'Enter') { e.preventDefault(); runSel(sel); }
+  });
+  pList.addEventListener('click', e => { const li = e.target.closest('li[data-i]'); if (li) runSel(+li.dataset.i); });
+  palette.addEventListener('click', e => { if (e.target === palette) palette.close(); });
+
   $('#toTop').addEventListener('click', () => scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }));
   $('#year').textContent = new Date().getFullYear();
 })();
