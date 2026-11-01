@@ -161,11 +161,7 @@ dialog ul { display: grid; gap: 6px; padding-left: 18px; list-style: disc; }
   .nav ul.open { display: flex; }
   .nav ul a { display: block; padding: 12px 14px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-  .chart .line { stroke-dashoffset: 0; } .chart .area { opacity: 1; }
-  .js .reveal { opacity: 1; transform: none; }
-}
+
 
 /* ===== Polish pass: portrait hero, marquee, spotlight cards ===== */
 body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 70; opacity: .035; mix-blend-mode: overlay;
@@ -207,7 +203,7 @@ h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg
     .hero { padding-top: 110px; }
   .nav { border-radius: 24px; }
 }
-@media (prefers-reduced-motion: reduce) { .track { animation: none; } }
+
 
 /* Featured project */
 .featured { grid-column: 1 / -1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center; padding: 20px; }
@@ -344,8 +340,34 @@ h1 em .ch { color: color-mix(in srgb, var(--accent) calc((1 - var(--p)) * 100%),
 .stack li:hover, .chips li:hover, .chip:hover { transform: translateY(-2px); border-color: var(--accent); }
 
 @media (max-width: 860px) { .portrait { width: min(78%, 320px); } }
-@media (prefers-reduced-motion: reduce) {
-  .js h1 .ch, .js .portrait .photo, .js .trek.reveal img, .js .card-photo { opacity: 1; transform: none; filter: none; clip-path: none; }
-  .portrait::before { animation: none; } .photo img { transform: none; }
-  .js h2::after { transform: none; } .timeline::before { transform: none; } .timeline > li::before { transform: none; }
-}
+
+
+/* ===== Calm mode (OS reduce-motion, or the visitor turned Motion off) ===== */
+.calm *, .calm *::before, .calm *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+.calm .chart .line { stroke-dashoffset: 0; } .calm .chart .area { opacity: 1; }
+.calm.js .reveal, .calm.js h1 .ch, .calm.js .portrait .photo, .calm.js .trek.reveal img, .calm.js .card-photo { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
+.calm .photo img { transform: none; } .calm.js h2::after, .calm .timeline::before, .calm .timeline > li::before { transform: none; }
+.calm .portrait::before, .calm #net, .calm .cursor-ring { display: none; }
+
+/* ===== Bolder motion ===== */
+#net { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.hero-inner { z-index: 2; }
+.js .reveal { transition-duration: 1s; }
+.js .reveal[data-fx="left"] { transform: translateX(-70px); } .js .reveal[data-fx="right"] { transform: translateX(70px); }
+.js .reveal[data-fx="zoom"] { transform: translateY(50px) scale(.9); } .js .reveal[data-fx="up"] { transform: translateY(60px); }
+.js .reveal.in { opacity: 1; transform: none; }
+.js .hero-copy { transform: translateY(calc(var(--hp, 0) * -70px)); opacity: calc(1 - var(--hp, 0) * .85); }
+.js .hero-grid .portrait.reveal.in { transform: translateY(calc(var(--hp, 0) * 50px)) scale(calc(1 - var(--hp, 0) * .1)); transition: opacity .8s; }
+.cursor-ring { position: fixed; left: 0; top: 0; width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%; border: 2px solid var(--accent); pointer-events: none; z-index: 90; opacity: 0;
+  transition: width .25s, height .25s, margin .25s, background .25s, opacity .3s; mix-blend-mode: normal; }
+.cursor-ring.on { opacity: .85; }
+.cursor-ring.big { width: 64px; height: 64px; margin: -32px 0 0 -32px; background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.btn { position: relative; overflow: hidden; }
+.ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,.55); transform: scale(0); animation: ripple .7s ease-out forwards; pointer-events: none; }
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+.motion-btn { gap: 8px; }
+.motion-btn .dotm { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.motion-btn[aria-pressed="false"] .dotm { background: var(--muted); box-shadow: none; }
+.stat b { display: inline-block; transition: transform .3s; } .stat:hover b { transform: scale(1.12) rotate(-2deg); }
+.timeline > li { transition: transform .4s, opacity .8s; } .timeline > li:hover { transform: translateX(10px); }
+@media (max-width: 860px) { .motion-btn span { display: none; } .motion-btn { width: 40px; padding: 0; justify-content: center; } }

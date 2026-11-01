@@ -4,7 +4,8 @@
   root.classList.add('js');
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = root.classList.contains('calm');
+  const osReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
   /* Split headline into letters for a staggered entrance */
@@ -26,6 +27,15 @@
     };
     [...h1.childNodes].forEach(n => { if (n.nodeType === 3) wrap(n, false); else if (n.tagName === 'EM') [...n.childNodes].forEach(c => c.nodeType === 3 && wrap(c, true)); });
   })();
+
+  /* Motion toggle: lets visitors override the OS setting (stored per browser) */
+  const motionBtn = $('#motionBtn');
+  motionBtn.setAttribute('aria-pressed', String(!reduced));
+  motionBtn.title = reduced ? 'Animations are off. Click to turn them on.' : 'Animations are on. Click to turn them off.';
+  motionBtn.addEventListener('click', () => {
+    try { localStorage.setItem('motion', reduced ? 'on' : 'off'); } catch (e) {}
+    location.reload();
+  });
 
   /* Theme toggle */
   const toggle = $('#themeToggle');
@@ -53,6 +63,7 @@
     nav.classList.toggle('scrolled', scrollY > 10);
     if (!reduced) {
       root.style.setProperty('--sy', Math.min(scrollY, 1200));
+      root.style.setProperty('--hp', Math.min(1, scrollY / (innerHeight * 0.8)).toFixed(3));
       const tl = $('.timeline');
       if (tl) { const r = tl.getBoundingClientRect(); root.style.setProperty('--tl', Math.min(1, Math.max(0, (innerHeight * 0.7 - r.top) / r.height)).toFixed(3)); }
     }
@@ -90,7 +101,15 @@
       io.unobserve(en.target);
     });
   }, { threshold: 0.12 });
-  $$('.reveal').forEach((el, i) => { el.style.setProperty('--d', (i % 4) * 0.08 + 's'); io.observe(el); });
+  const fx = ['up', 'zoom', 'left', 'right'];
+  $$('.reveal').forEach((el, i) => {
+    el.style.setProperty('--d', (i % 4) * 0.08 + 's');
+    if (el.matches('.timeline > li')) el.dataset.fx = i % 2 ? 'right' : 'left';
+    else if (el.matches('.card, .stat')) el.dataset.fx = 'zoom';
+    else if (el.matches('h1, .portrait')) { /* custom entrances */ }
+    else el.dataset.fx = fx[i % 2];
+    io.observe(el);
+  });
 
   /* Typing effect */
   const phrases = ['financial modeling', 'valuation & equity research', 'markets & the global economy', 'building businesses', 'Division III football'];
@@ -285,6 +304,83 @@
       photo.style.setProperty('--rx', (0.5 - (e.clientY - r.top) / r.height) * 8 + 'deg');
     });
     box.addEventListener('pointerleave', () => { photo.style.setProperty('--rx', '0deg'); photo.style.setProperty('--ry', '0deg'); });
+  }
+
+  /* Ripple on buttons */
+  $$('.btn').forEach(b => b.addEventListener('pointerdown', e => {
+    if (reduced) return;
+    const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height);
+    const sp = document.createElement('span'); sp.className = 'ripple';
+    sp.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+    b.appendChild(sp); setTimeout(() => sp.remove(), 800);
+  }));
+
+  /* Trailing cursor ring (fine pointers, motion on) */
+  if (!reduced && matchMedia('(pointer: fine)').matches) {
+    const ring = document.createElement('div'); ring.className = 'cursor-ring'; document.body.appendChild(ring);
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; ring.classList.add('on'); ring.classList.toggle('big', !!e.target.closest('a, button, .card, .filter, input, textarea')); }, { passive: true });
+    document.addEventListener('pointerleave', () => ring.classList.remove('on'));
+    (function follow() { cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18; ring.style.transform = `translate(${cx}px, ${cy}px)`; requestAnimationFrame(follow); })();
+  }
+
+  /* Interactive particle network in the hero */
+  (function () {
+    const cv = $('#net'); if (!cv) return;
+    const ctx = cv.getContext('2d'); let w = 0, h = 0, dpr = 1, pts = [], mouse = { x: -999, y: -999 }, running = false, c1 = '#d9560b', c2 = '#5b21b6';
+    const hero = cv.parentElement;
+    const colors = () => { const cs = getComputedStyle(root); c1 = cs.getPropertyValue('--accent').trim(); c2 = cs.getPropertyValue('--accent2').trim(); };
+    const size = () => {
+      dpr = Math.min(devicePixelRatio || 1, 2); w = hero.clientWidth; h = hero.clientHeight;
+      cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.min(95, Math.round((w * h) / 13000));
+      pts = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - .5) * .5, vy: (Math.random() - .5) * .5, r: 1.4 + Math.random() * 1.8, k: Math.random() < .5 }));
+    };
+    const frame = () => {
+      ctx.clearRect(0, 0, w, h);
+      for (const p of pts) {
+        const dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
+        if (d2 < 150 * 150) { const f = (1 - Math.sqrt(d2) / 150) * 1.6; p.vx += (dx / (Math.sqrt(d2) + 1)) * f * .15; p.vy += (dy / (Math.sqrt(d2) + 1)) * f * .15; }
+        p.vx *= .985; p.vy *= .985;
+        p.x += p.vx + (Math.random() - .5) * .04; p.y += p.vy + (Math.random() - .5) * .04;
+        if (p.x < 0 || p.x > w) p.vx *= -1; if (p.y < 0 || p.y > h) p.vy *= -1;
+      }
+      ctx.lineWidth = 1;
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i];
+        for (let j = i + 1; j < pts.length; j++) {
+          const b = pts[j], dx = a.x - b.x, dy = a.y - b.y, d = dx * dx + dy * dy;
+          if (d < 120 * 120) { ctx.globalAlpha = (1 - Math.sqrt(d) / 120) * .35; ctx.strokeStyle = a.k ? c1 : c2; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+        }
+        const mx = a.x - mouse.x, my = a.y - mouse.y, md = mx * mx + my * my;
+        if (md < 170 * 170) { ctx.globalAlpha = (1 - Math.sqrt(md) / 170) * .7; ctx.strokeStyle = c1; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke(); }
+        ctx.globalAlpha = .85; ctx.fillStyle = a.k ? c1 : c2; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.283); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      if (running) requestAnimationFrame(frame);
+    };
+    colors(); size();
+    addEventListener('resize', size);
+    hero.addEventListener('pointermove', e => { const r = hero.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; });
+    hero.addEventListener('pointerleave', () => { mouse.x = mouse.y = -999; });
+    toggle.addEventListener('click', () => setTimeout(colors, 30));
+    if (reduced) { frame(); return; }
+    new IntersectionObserver(es => { const vis = es[0].isIntersecting; if (vis && !running) { running = true; requestAnimationFrame(frame); } else if (!vis) running = false; }).observe(hero);
+  })();
+
+  /* DCF demo plays itself once when it scrolls into view */
+  const dcfEl = $('#dcf');
+  if (dcfEl && !reduced) {
+    new IntersectionObserver((es, ob) => {
+      if (!es[0].isIntersecting) return; ob.disconnect();
+      const end = { growth: 8, wacc: 10, tg: 2 }, from = { growth: 0, wacc: 14, tg: 0 }, t0 = performance.now(), dur = 2200;
+      (function step(now) {
+        const t = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - t, 3);
+        ids.forEach(k => { inp[k].value = (from[k] + (end[k] - from[k]) * e).toFixed(2); });
+        renderDcf();
+        if (t < 1) requestAnimationFrame(step);
+      })(t0);
+    }, { threshold: 0.4 }).observe(dcfEl);
   }
 
   $('#toTop').addEventListener('click', () => scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }));
