@@ -224,6 +224,7 @@
     { label: 'Go to Skills', keywords: 'excel python', hint: 'Section', run: go('skills') },
     { label: 'Go to Contact', keywords: 'email message hire', hint: 'Section', run: go('contact') },
     { label: 'Visit Deb & Kess Notary site', keywords: 'live website', hint: 'External', run: () => window.open('https://debandkessnotary.com', '_blank', 'noopener') },
+    { label: 'Book a 15-minute chat', keywords: 'calendly schedule meeting call networking', hint: 'External', run: () => window.open('https://calendly.com/seankessner05', '_blank', 'noopener') },
     { label: 'Open LinkedIn', keywords: 'connect profile', hint: 'External', run: () => window.open('https://www.linkedin.com/in/sean-kessner-8090b9318', '_blank', 'noopener') },
     { label: 'Download résumé (PDF)', keywords: 'cv', hint: 'Download', run: () => { const a = document.createElement('a'); a.href = 'assets/Sean-Kessner-Resume.pdf'; a.download = ''; a.click(); } },
     { label: 'Email Sean', keywords: 'mail contact', hint: 'Action', run: () => { location.href = 'mailto:' + U.OWNER_EMAIL; } },
