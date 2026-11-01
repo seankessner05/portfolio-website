@@ -6,6 +6,27 @@
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+
+  /* Split headline into letters for a staggered entrance */
+  (function () {
+    const h1 = $('h1'); if (!h1) return;
+    const label = h1.textContent.trim().replace(/\s+/g, ' ');
+    h1.setAttribute('aria-label', label);
+    let i = 0;
+    const wrap = (node, grad) => {
+      const chars = [...node.textContent];
+      const frag = document.createDocumentFragment();
+      chars.forEach((c, k) => {
+        if (/\s/.test(c)) { frag.appendChild(document.createTextNode(c)); return; }
+        const sp = document.createElement('span'); sp.className = 'ch'; sp.setAttribute('aria-hidden', 'true');
+        sp.style.setProperty('--i', i++); if (grad) sp.style.setProperty('--p', chars.length > 1 ? k / (chars.length - 1) : 0);
+        sp.textContent = c; frag.appendChild(sp);
+      });
+      node.replaceWith(frag);
+    };
+    [...h1.childNodes].forEach(n => { if (n.nodeType === 3) wrap(n, false); else if (n.tagName === 'EM') [...n.childNodes].forEach(c => c.nodeType === 3 && wrap(c, true)); });
+  })();
+
   /* Theme toggle */
   const toggle = $('#themeToggle');
   const syncToggle = () => toggle.setAttribute('aria-label', root.dataset.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
@@ -30,6 +51,11 @@
     const h = document.documentElement.scrollHeight - innerHeight;
     bar.style.width = (h > 0 ? (scrollY / h) * 100 : 0) + '%';
     nav.classList.toggle('scrolled', scrollY > 10);
+    if (!reduced) {
+      root.style.setProperty('--sy', Math.min(scrollY, 1200));
+      const tl = $('.timeline');
+      if (tl) { const r = tl.getBoundingClientRect(); root.style.setProperty('--tl', Math.min(1, Math.max(0, (innerHeight * 0.7 - r.top) / r.height)).toFixed(3)); }
+    }
   };
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -248,6 +274,18 @@
   });
   pList.addEventListener('click', e => { const li = e.target.closest('li[data-i]'); if (li) runSel(+li.dataset.i); });
   palette.addEventListener('click', e => { if (e.target === palette) palette.close(); });
+
+  /* Portrait tilt */
+  const photo = $('.portrait .photo');
+  if (photo && matchMedia('(pointer: fine)').matches && !reduced) {
+    const box = photo.parentElement;
+    box.addEventListener('pointermove', e => {
+      const r = box.getBoundingClientRect();
+      photo.style.setProperty('--ry', ((e.clientX - r.left) / r.width - 0.5) * 10 + 'deg');
+      photo.style.setProperty('--rx', (0.5 - (e.clientY - r.top) / r.height) * 8 + 'deg');
+    });
+    box.addEventListener('pointerleave', () => { photo.style.setProperty('--rx', '0deg'); photo.style.setProperty('--ry', '0deg'); });
+  }
 
   $('#toTop').addEventListener('click', () => scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }));
   $('#year').textContent = new Date().getFullYear();
