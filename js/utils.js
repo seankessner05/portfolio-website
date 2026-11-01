@@ -43,25 +43,6 @@
     return Number(v.toFixed(decimals));
   }
 
-  /**
-   * Simple illustrative DCF: grow `fcf0` at `growth` for `years`, discount at `wacc`,
-   * add a Gordon-growth terminal value. Rates are decimals (0.08 = 8%).
-   * Returns null when the inputs make the model undefined (wacc <= terminalGrowth).
-   */
-  function dcfValue({ fcf0, growth, wacc, terminalGrowth, years = 5 }) {
-    if (![fcf0, growth, wacc, terminalGrowth].every(Number.isFinite) || wacc <= terminalGrowth) return null;
-    const flows = [];
-    let pvFcf = 0, fcf = fcf0;
-    for (let t = 1; t <= years; t++) {
-      fcf *= 1 + growth;
-      flows.push(fcf);
-      pvFcf += fcf / Math.pow(1 + wacc, t);
-    }
-    const terminal = (flows[years - 1] * (1 + terminalGrowth)) / (wacc - terminalGrowth);
-    const pvTerminal = terminal / Math.pow(1 + wacc, years);
-    return { flows, pvFcf, pvTerminal, enterpriseValue: pvFcf + pvTerminal, terminalShare: pvTerminal / (pvFcf + pvTerminal) };
-  }
-
   /** Filter a list of timeline categories: 'all' shows everything. */
   function matchesFilter(itemCats, filter) {
     return filter === 'all' || String(itemCats || '').split(/\s+/).includes(filter);
@@ -74,5 +55,5 @@
     return commands.filter(c => c.label.toLowerCase().includes(q) || (c.keywords || '').toLowerCase().includes(q));
   }
 
-  return { dcfValue, matchesFilter, filterCommands, isValidEmail, buildMailto, validateContact, resolveTheme, toggleTheme, countValue, OWNER_EMAIL };
+  return { matchesFilter, filterCommands, isValidEmail, buildMailto, validateContact, resolveTheme, toggleTheme, countValue, OWNER_EMAIL };
 });

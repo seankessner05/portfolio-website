@@ -53,29 +53,6 @@ test('countValue eases from 0 to target and clamps', () => {
   assert.equal(U.countValue(3.5, 1, 1), 3.5);
 });
 
-test('dcfValue matches a hand-computed case', () => {
-  // fcf0=100, g=0, wacc=10%, tg=0%, 5y: PV(flows)=100*3.790787=379.0787; TV=100/0.1=1000 -> /1.1^5=620.9213
-  const r = U.dcfValue({ fcf0: 100, growth: 0, wacc: 0.1, terminalGrowth: 0 });
-  assert.ok(Math.abs(r.pvFcf - 379.0787) < 0.001);
-  assert.ok(Math.abs(r.pvTerminal - 620.9213) < 0.001);
-  assert.ok(Math.abs(r.enterpriseValue - 1000) < 0.001);
-  assert.equal(r.flows.length, 5);
-});
-
-test('dcfValue grows cash flows and rejects undefined models', () => {
-  const r = U.dcfValue({ fcf0: 100, growth: 0.1, wacc: 0.1, terminalGrowth: 0.02 });
-  assert.ok(Math.abs(r.flows[0] - 110) < 1e-9);
-  assert.ok(r.terminalShare > 0 && r.terminalShare < 1);
-  assert.equal(U.dcfValue({ fcf0: 100, growth: 0.1, wacc: 0.03, terminalGrowth: 0.03 }), null);
-  assert.equal(U.dcfValue({ fcf0: NaN, growth: 0.1, wacc: 0.1, terminalGrowth: 0.02 }), null);
-});
-
-test('higher WACC lowers enterprise value', () => {
-  const lo = U.dcfValue({ fcf0: 100, growth: 0.08, wacc: 0.08, terminalGrowth: 0.02 });
-  const hi = U.dcfValue({ fcf0: 100, growth: 0.08, wacc: 0.12, terminalGrowth: 0.02 });
-  assert.ok(lo.enterpriseValue > hi.enterpriseValue);
-});
-
 test('matchesFilter handles all and multi-category items', () => {
   assert.equal(U.matchesFilter('finance campus', 'all'), true);
   assert.equal(U.matchesFilter('finance campus', 'campus'), true);

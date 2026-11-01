@@ -227,37 +227,6 @@
     $$('.timeline > li').forEach(li => li.classList.toggle('is-hidden', !U.matchesFilter(li.dataset.cat, btn.dataset.filter)));
   }));
 
-  /* Interactive DCF */
-  const ids = ['growth', 'wacc', 'tg'];
-  const inp = Object.fromEntries(ids.map(k => [k, $('#in-' + k)]));
-  const money = n => '$' + Math.round(n).toLocaleString('en-US') + 'M';
-  const renderDcf = () => {
-    const v = k => parseFloat(inp[k].value);
-    ids.forEach(k => { $('#o-' + k).textContent = v(k).toFixed(k === 'tg' ? 2 : 1) + '%'; });
-    const r = U.dcfValue({ fcf0: 100, growth: v('growth') / 100, wacc: v('wacc') / 100, terminalGrowth: v('tg') / 100 });
-    $('#dcfWarn').hidden = !!r;
-    if (!r) { $('#ev').textContent = '—'; return; }
-    $('#ev').textContent = money(r.enterpriseValue);
-    $('#splitFcf').style.width = (1 - r.terminalShare) * 100 + '%';
-    $('#splitTv').style.width = r.terminalShare * 100 + '%';
-    $('#pvFcf').textContent = money(r.pvFcf);
-    $('#pvTv').textContent = money(r.pvTerminal) + ' (' + Math.round(r.terminalShare * 100) + '%)';
-    const max = Math.max(...r.flows);
-    $('#bars').innerHTML = r.flows.map((f, i) => `<div style="height:${Math.max(4, (f / max) * 100)}%" data-l="Y${i + 1} ${Math.round(f)}"></div>`).join('');
-    // sensitivity grid: WACC +/-1% by terminal growth +/-0.5%
-    const waccs = [v('wacc') - 1, v('wacc'), v('wacc') + 1], tgs = [v('tg') - 0.5, v('tg'), v('tg') + 0.5];
-    const vals = waccs.map(w => tgs.map(g => U.dcfValue({ fcf0: 100, growth: v('growth') / 100, wacc: w / 100, terminalGrowth: g / 100 })));
-    const flat = vals.flat().filter(Boolean).map(x => x.enterpriseValue), lo = Math.min(...flat), hi = Math.max(...flat);
-    const tint = x => { const t = hi === lo ? 0.5 : (x - lo) / (hi - lo); return `color-mix(in srgb, var(--accent) ${Math.round(t * 38)}%, color-mix(in srgb, var(--accent2) 14%, transparent))`; };
-    $('#sens').innerHTML = '<tr><th>WACC \\ TG</th>' + tgs.map(g => `<th>${g.toFixed(2)}%</th>`).join('') + '</tr>' +
-      waccs.map((w, i) => `<tr><th>${w.toFixed(1)}%</th>` + tgs.map((g, j) => {
-        const c = vals[i][j];
-        return c ? `<td class="${i === 1 && j === 1 ? 'base' : ''}" style="background:${tint(c.enterpriseValue)}">${Math.round(c.enterpriseValue).toLocaleString('en-US')}</td>` : '<td>n/a</td>';
-      }).join('') + '</tr>').join('');
-  };
-  ids.forEach(k => inp[k].addEventListener('input', renderDcf));
-  renderDcf();
-
   /* Quick navigation palette (Cmd/Ctrl+K) */
   const palette = $('#palette'), pInput = $('#paletteInput'), pList = $('#paletteList');
   const go = id => () => { const el = $('#' + id); if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); };
@@ -265,7 +234,6 @@
     { label: 'Go to About', keywords: 'bio intro', hint: 'Section', run: go('about') },
     { label: 'Go to Experience', keywords: 'timeline jobs education', hint: 'Section', run: go('experience') },
     { label: 'Go to Projects', keywords: 'work notary case studies', hint: 'Section', run: go('projects') },
-    { label: 'Try the DCF demo', keywords: 'valuation finance model slider', hint: 'Interactive', run: go('dcf') },
     { label: 'Go to Skills', keywords: 'excel python', hint: 'Section', run: go('skills') },
     { label: 'Go to Contact', keywords: 'email message hire', hint: 'Section', run: go('contact') },
     { label: 'Visit Deb & Kess Notary site', keywords: 'live website', hint: 'External', run: () => window.open('https://debandkessnotary.com', '_blank', 'noopener') },
@@ -367,21 +335,6 @@
     if (reduced) { frame(); return; }
     new IntersectionObserver(es => { const vis = es[0].isIntersecting; if (vis && !running) { running = true; requestAnimationFrame(frame); } else if (!vis) running = false; }).observe(hero);
   })();
-
-  /* DCF demo plays itself once when it scrolls into view */
-  const dcfEl = $('#dcf');
-  if (dcfEl && !reduced) {
-    new IntersectionObserver((es, ob) => {
-      if (!es[0].isIntersecting) return; ob.disconnect();
-      const end = { growth: 8, wacc: 10, tg: 2 }, from = { growth: 0, wacc: 14, tg: 0 }, t0 = performance.now(), dur = 2200;
-      (function step(now) {
-        const t = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - t, 3);
-        ids.forEach(k => { inp[k].value = (from[k] + (end[k] - from[k]) * e).toFixed(2); });
-        renderDcf();
-        if (t < 1) requestAnimationFrame(step);
-      })(t0);
-    }, { threshold: 0.4 }).observe(dcfEl);
-  }
 
   $('#toTop').addEventListener('click', () => scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }));
   $('#year').textContent = new Date().getFullYear();

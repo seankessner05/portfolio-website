@@ -256,32 +256,6 @@
           <button class="link" type="button" data-open="ief">Read overview →</button>
         </article>
       </div>
-      <div class="dcf card reveal" id="dcf">
-        <div class="dcf-head">
-          <span class="tag">Interactive demo</span>
-          <h3>Try a DCF</h3>
-          <p class="muted">A five-year discounted cash flow for a hypothetical company that generates $100M of free cash flow today. Drag the sliders to see how growth and the discount rate move value. This is a teaching example, not a real company or investment advice.</p>
-        </div>
-        <div class="dcf-body">
-          <div class="dcf-controls">
-            <label>Annual FCF growth <output id="o-growth">8.0%</output><input id="in-growth" type="range" min="0" max="20" step="0.5" value="8"></label>
-            <label>Discount rate (WACC) <output id="o-wacc">10.0%</output><input id="in-wacc" type="range" min="6" max="14" step="0.5" value="10"></label>
-            <label>Terminal growth <output id="o-tg">2.0%</output><input id="in-tg" type="range" min="0" max="4" step="0.25" value="2"></label>
-          </div>
-          <div class="dcf-out" aria-live="polite">
-            <div class="ev-label">Implied enterprise value</div>
-            <div class="ev" id="ev">$0M</div>
-            <div class="split" aria-hidden="true"><span id="splitFcf"></span><span id="splitTv"></span></div>
-            <div class="split-legend"><span><i class="k1"></i>PV of 5-yr cash flows <b id="pvFcf"></b></span><span><i class="k2"></i>PV of terminal value <b id="pvTv"></b></span></div>
-            <div class="bars" id="bars" aria-hidden="true"></div>
-            <p class="dcf-warn" id="dcfWarn" hidden>Discount rate must be above terminal growth for the model to work.</p>
-          </div>
-        </div>
-        <div class="sens-wrap">
-          <div class="ev-label">Sensitivity: enterprise value ($M) by WACC and terminal growth</div>
-          <table class="sens" id="sens"></table>
-        </div>
-      </div>
     </section>
 
     <!-- SKILLS -->
@@ -317,7 +291,6 @@
             <li><b>HWS Day of Service</b> (2024–Present)</li>
             <li><b>Happiness House</b>, Geneva, NY (2025–2026)</li>
           </ul>
-          <p class="muted">Interests: sports, travel, music, weightlifting, and collecting Pokémon cards and Legos.</p>
         </article>
       </div>
     </section>
