@@ -67,7 +67,7 @@
   $$('.reveal').forEach((el, i) => { el.style.setProperty('--d', (i % 4) * 0.08 + 's'); io.observe(el); });
 
   /* Typing effect */
-  const phrases = ['financial modeling', 'valuation & equity research', 'building with AI', 'markets & the global economy', 'Division III football'];
+  const phrases = ['financial modeling', 'valuation & equity research', 'markets & the global economy', 'building businesses', 'Division III football'];
   const typed = $('#typed');
   if (reduced) typed.textContent = phrases[0];
   else {
