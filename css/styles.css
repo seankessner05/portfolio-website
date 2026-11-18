@@ -317,7 +317,8 @@ h1 em .ch { color: color-mix(in srgb, var(--accent) calc((1 - var(--p)) * 100%),
 
 
 /* ===== Calm mode (OS reduce-motion, or the visitor turned Motion off) ===== */
-.calm *, .calm *::before, .calm *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+/* `.calm *` does not match the root, and `html` is what sets smooth scrolling. */
+.calm, .calm *, .calm *::before, .calm *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 .calm .chart .line { stroke-dashoffset: 0; } .calm .chart .area { opacity: 1; }
 .calm.js .reveal, .calm.js h1 .ch, .calm.js .portrait .photo, .calm.js .trek.reveal img, .calm.js .card-photo { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
 .calm .photo img { transform: none; } .calm.js h2::after, .calm .timeline::before, .calm .timeline > li::before { transform: none; }

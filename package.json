@@ -4,7 +4,13 @@
   "private": true,
   "description": "Sean Kessner's personal portfolio site",
   "scripts": {
+    "start": "serve . --no-clipboard",
+    "preview": "serve . --listen tcp://127.0.0.1:4173 --no-clipboard --no-request-logging --no-port-switching",
     "test": "node --test \"tests/*.test.js\"",
-    "start": "npx --yes serve ."
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "serve": "^14.2.8"
   }
 }
